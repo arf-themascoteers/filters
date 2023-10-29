@@ -32,11 +32,19 @@ def train(mode="normal"):
     data = data.reshape(1, 1, data.shape[0], data.shape[1])
     model = MyConvNet()
     if mode!="normal":
+
         filters = model.net[0].weight.data
+        lweights = model.net[3].weight.data
+
         r = filters[0, 0]
+        p = lweights[0,0]
+
         filters[1, 0] = r
+        lweights[1, 0] = p
+
         if mode == "3same":
             filters[2, 0] = r
+            lweights[2, 0] = p
 
     filters = model.net[0].weight.data
     plot_filters(filters,mode,"before")
