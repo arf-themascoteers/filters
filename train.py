@@ -5,9 +5,10 @@ from my_conv_net import MyConvNet
 import torch
 import torch.nn as nn
 import constants
+import analyze
 
 
-def train():
+def train(mode="normal"):
     num_epochs = 5
     num_classes = 10
     learning_rate = 0.001
@@ -19,7 +20,13 @@ def train():
 
     model = MyConvNet()
 
+    if mode != "normal":
+        filters = model.layer1[0].weight.data
+        r = torch.rand(5, 5)
+        filters[0, 0] = r
+        filters[1, 0] = r
 
+    analyze.analyze(model, mode, "before")
     model = model.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -55,4 +62,5 @@ def train():
                         )
                 )
     torch.save(model, constants.DEFAULT_MODEL_PATH)
+    analyze.analyze(model, mode, "before")
     return model
