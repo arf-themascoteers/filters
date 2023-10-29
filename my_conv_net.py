@@ -8,16 +8,16 @@ class MyConvNet(nn.Module):
         super(MyConvNet, self).__init__()
 
         self.layer1 = nn.Sequential(
-            nn.Conv2d(1, 3, kernel_size=5),
+            nn.Conv2d(1, 3, kernel_size=5, bias=False),
             nn.ReLU(),
-            nn.MaxPool2d(kernel_size=4)
+            nn.AvgPool2d(kernel_size=4)
         )
 
         self.fc1 = nn.Linear(100, 2)
 
     def forward(self, x):
         out = self.layer1(x)
-        out = torch.flatten(out)
+        out = torch.flatten(out, start_dim=1)
         out = self.fc1(out)
         return out
 
