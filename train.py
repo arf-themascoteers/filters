@@ -36,6 +36,8 @@ def train(mode="normal"):
         r = torch.rand(28, 28)
         filters[0, 0] = r
         filters[1, 0] = r
+        if mode == "3same":
+            filters[2, 0] = r
 
     filters = model.net[0].weight.data
     plot_filters(filters,mode,"before")
