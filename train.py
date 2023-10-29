@@ -33,8 +33,7 @@ def train(mode="normal"):
     model = MyConvNet()
     if mode!="normal":
         filters = model.net[0].weight.data
-        r = torch.rand(28, 28)
-        filters[0, 0] = r
+        r = filters[0, 0]
         filters[1, 0] = r
         if mode == "3same":
             filters[2, 0] = r
