@@ -1,66 +1,50 @@
-from torch.utils.data import DataLoader
-import torchvision.transforms as transforms
-import torchvision.datasets
+import analyze
 from my_conv_net import MyConvNet
 import torch
 import torch.nn as nn
 import constants
-import analyze
+import cv2
+import torch.nn.functional as F
 
 
 def train(mode="normal"):
-    num_epochs = 5
-    num_classes = 10
-    learning_rate = 0.001
-    trans = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-    train_dataset = torchvision.datasets.MNIST(root=constants.DATA_PATH, train=True, transform=trans, download=True)
-    train_loader = DataLoader(dataset=train_dataset, batch_size=constants.batch_size, shuffle=True)
-
+    data = cv2.imread("4.png")
+    data = cv2.cvtColor(data, cv2.COLOR_BGR2GRAY)
+    data = torch.tensor(data, dtype=torch.float)
+    analyze.plot_tensor(data,"others","tensor")
+    images = data.reshape(1, 1, data.shape[0], data.shape[1])
+    model = MyConvNet()
+    filters = model.layer1[0].weight.data
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
     model = MyConvNet()
 
     if mode != "normal":
         filters = model.layer1[0].weight.data
-        r = torch.rand(5, 5)
+        r = torch.rand(28, 28)
         filters[0, 0] = r
         filters[1, 0] = r
 
     analyze.analyze(model, mode, "before")
     model = model.to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     print("Training...")
-    total_step = len(train_loader)
-    loss_list = []
-    acc_list = []
-    for epoch in range(num_epochs):
-        for i, (images, labels) in enumerate(train_loader):
-            images = images.to(device)
-            labels = labels.to(device)
-            outputs = model(images)
-            loss = criterion(outputs, labels)
-            loss_list.append(loss.item())
+    for epoch in range(1000):
             optimizer.zero_grad()
+            images = images.to(device)
+            labels = torch.tensor([4])
+            labels = labels.to(device)
+
+            optimizer.zero_grad()
+            outputs = model(images)
+            loss = F.nll_loss(outputs, labels)
+            print(f'Epoch:{epoch + 1}, Loss:{loss.item():.4f}')
             loss.backward()
             optimizer.step()
-            total = labels.size(0)
-            _, predicted = torch.max(outputs.data, 1)
-            correct = (predicted == labels).sum().item()
-            acc_list.append(correct / total)
 
-            if (i + 1) % 100 == 0:
-                print(
-                    "Epoch [{}/{}], Step [{}/{}], Loss: {:.4f}, Accuracy: {:.2f}%"\
-                        .format(
-                            epoch + 1,
-                            num_epochs, i + 1,
-                            total_step,
-                            loss.item(),
-                            (correct / total) * 100
-                        )
-                )
+
     torch.save(model, constants.DEFAULT_MODEL_PATH)
-    analyze.analyze(model, mode, "before")
+    analyze.analyze(model, mode, "after")
     return model
