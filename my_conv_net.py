@@ -6,14 +6,14 @@ class MyConvNet(nn.Module):
 
     def __init__(self):
         super(MyConvNet, self).__init__()
-        self.layer1 = nn.Sequential(
-            nn.Conv2d(1,100, (28,28)),
-            nn.ReLU(),
+        self.net = nn.Sequential(
+            nn.Conv2d(1,3, (28,28)),
+            nn.LeakyReLU(),
             nn.Flatten(),
-            nn.Linear(100, 10)
+            nn.Linear(3, 10)
         )
 
     def forward(self, x):
-        x = self.layer1(x)
+        x = self.net(x)
         return F.log_softmax(x, dim=1)
 
