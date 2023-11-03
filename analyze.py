@@ -22,5 +22,11 @@ def analyze(model,folder,prefix):
     plot_filters(filters,folder,prefix)
 
 
+def plot_fms(model, folder, epoch):
+    fms = model.current_fms[0,0:3]
+    for index, i in enumerate(fms):
+        tensor = i.data.clone()
+        plt.imshow(tensor.cpu().numpy(), cmap="gray")
+        plt.savefig(f"{folder}/{epoch}_{index}.png")
 
 

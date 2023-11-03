@@ -3,10 +3,11 @@ import cv2
 import torch.nn.functional as F
 from analyze import plot_tensor
 from analyze import plot_filters
+from analyze import plot_fms
 from my_conv_net import MyConvNet
 
 
-def train_it(model, data):
+def train_it(model, data, mode):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
     NUM_EPOCHS = 1000
@@ -17,6 +18,8 @@ def train_it(model, data):
     for epoch  in range(0, NUM_EPOCHS):
         optimizer.zero_grad()
         y_pred = model(data)
+        if epoch%10 == 0 and epoch < 100:
+            plot_fms(model, mode, epoch)
         loss = F.nll_loss(y_pred, y_actual)
         loss.backward()
         optimizer.step()
@@ -33,8 +36,8 @@ def train(mode="normal"):
     model = MyConvNet()
     if mode!="normal":
 
-        filters = model.net[0].weight.data
-        lweights = model.net[3].weight.data
+        filters = model.conv.weight.data
+        lweights = model.linear.weight.data
 
         r = filters[0, 0]
         p = lweights[0,0]
@@ -46,8 +49,8 @@ def train(mode="normal"):
             filters[2, 0] = r
             lweights[2, 0] = p
 
-    filters = model.net[0].weight.data
+    filters = model.conv.weight.data
     plot_filters(filters,mode,"before")
-    train_it(model, data)
-    filters = model.net[0].weight.data
+    train_it(model, data, mode)
+    filters = model.conv.weight.data
     plot_filters(filters,mode,"after")
